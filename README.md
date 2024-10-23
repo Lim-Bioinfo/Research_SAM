@@ -8,8 +8,8 @@
 ## Requirements
 + python ( and v 2.7.13)
 + pandas (v 0.24.2)
-+ matplotlib (v 2.0.0)
 + numpy (v 1.16.6)
++ matplotlib (v 2.0.0)
 + scipy (v 1.2.2)
 + sklearn (v 0.20.2)
 + lifelines (v 0.19.5)
@@ -17,9 +17,11 @@
 
 
 ## Installation
-+ All python packages can be installed via pip (https://pypi.org/project/pip/) or conda-forge (https://anaconda.org/conda-forge/repo)
++ All python packages can be installed via pip or conda-forge
 + e.g. pip install lifelines
 + e.g. conda install conda-forge::lifelines
++ Link (PIP) : https://pypi.org/project/pip/
++ Link (Conda-forge) : https://anaconda.org/conda-forge/repo/
 
 
 ## Code (Python)
@@ -28,7 +30,7 @@
 + "multiple_pathway_prediction.py" to predict drug response in cancer patients using multiple pathways
 
 ## Code (R)
-
++ "" to generate gene expression profile using limma
 
 
 ## Network proximity code
