@@ -38,7 +38,7 @@ if __name__=="__main__":
             continue 
 
     ## Calculate network proximity
-    network = wrappers.get_network("../Input/Human_STRING_v12.0_all_Fernandez_700.sif", only_lcc = True)
+    network = wrappers.get_network("../Result/Human_STRING_v12.0_all_Fernandez_700.sif", only_lcc = True)
     for pair in sorted(sam_dict['SKCM']):
         for target in [{'PIK3CA'}, {'MAPK1','PPP2CA','UGCG'}, {'BRAF'}, {'RAC1', 'TIAM1' ,'TRIO'}, {'SRD5A2'}]:
             result = wrappers.calculate_proximity(network, target, set(pair) & set(network.nodes()))
