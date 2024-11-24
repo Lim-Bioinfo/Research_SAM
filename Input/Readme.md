@@ -20,3 +20,7 @@
 ## Input files for Python2 code
 + Human protein-protein interaction network: 9606.protein.links.v12.0.txt.gz (Downloaded from STRING DB, v.12.0)
 + Human protein information network: 9606.protein.info.v12.0.txt.gz (Downloaded from STRING DB, v.12.0)
+
+## Input files for R code
++ Gene expression profile for SKCM from GEO metacohort: GSE_merged_batchcorrected_XX.gct (pm for primary and metastasis information, sv for survival analysis)
++ Human protein information network: 9606.protein.info.v12.0.txt.gz (Downloaded from STRING DB, v.12.0)
