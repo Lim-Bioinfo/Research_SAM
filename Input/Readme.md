@@ -1,8 +1,4 @@
-# Research_SAM
-
-
-## Identify pairlevel biomarkers from TCGA to predict and treat cancer metastasis
-+ Repository of source codes which reproduce the research article "Unveiling the novel pairwise biomarker to predict and treat cancer metastasis", Lim et al
+# Input file
 
 
 ## Requirements
