@@ -6,14 +6,30 @@
 
 
 ## Requirements
-+ python ( and v 2.7.13)
+### Requirements for python3
++ Python (v 3.9.16)
++ pandas (v 2.2.2)
++ numpy (v 1.26.4)
++ matplotlib (v 3.9.2)
++ networkx (v 3.2.1)
++ tqdm (v 4.66.4)
++ scipy (v 1.12.0)
++ sklearn (v 1.0.2)
++ lifelines (v 0.27.8)
++ more-itertools (v 10.3.0)
++ gseapy (v 1.1.0)
++ combat (v 0.3.3)
+
+### Requirements for python2
++ Python (v 2.7.16)
 + pandas (v 0.24.2)
-+ numpy (v 1.16.6)
-+ matplotlib (v 2.0.0)
-+ scipy (v 1.2.2)
-+ sklearn (v 0.20.2)
-+ lifelines (v 0.19.5)
-+ gseapy
++ numpy (v 1.14.2)
++ networkx (v 2.2)
++ tqdm (v 4.63.0)
+
+### Requirements for R
++ R (v 4.2.3)
++ limma (v 3.54.2)
 
 
 ## Installation
@@ -22,15 +38,6 @@
 + e.g. conda install conda-forge::lifelines
 + Link (PIP) : https://pypi.org/project/pip/
 + Link (Conda-forge) : https://anaconda.org/conda-forge/repo/
-
-
-## Code (Python)
-+ "run_ssGSEA.py" to generate pathway level expression profiles using single sample GSEA (ssGSEA) tool (gseapy)
-+ "single_pathway_prediction.py" to predict drug response in cancer patients using a single pathway
-+ "multiple_pathway_prediction.py" to predict drug response in cancer patients using multiple pathways
-
-## Code (R)
-+ "" to generate gene expression profile using limma
 
 
 ## Network proximity code
