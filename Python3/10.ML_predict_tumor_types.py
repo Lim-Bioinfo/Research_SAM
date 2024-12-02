@@ -1,3 +1,5 @@
+import shap
+import warnings
 import random
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -169,3 +171,45 @@ if __name__=="__main__":
     plt.legend(loc="lower right")
     plt.savefig("../Result/ML performance.svg", dpi = 600)
     plt.show()
+
+
+
+## Calculate mean SHAP values
+warnings.filterwarnings('ignore')
+
+# Prepare data
+df_corrected_transposed = df_corrected.T
+df_selected = df_corrected_transposed[sorted(candidate_dict['SAM genes'])]
+X = df_selected  # Features
+sample_label_map = {sample: 1 if sample in label_dict['Primary'] else 0 for sample in X.index}
+y = np.array([sample_label_map[sample] for sample in X.index])
+
+# Define LOOCV procedure
+all_shap_values = np.zeros((len(X), X.shape[1]))
+
+# Execute LOOCV
+for train_index, test_index in tqdm(list(loo.split(X)), desc = 'Samples'):
+    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+    y_train, y_test = y[train_index], y[test_index]
+
+    # Model Training
+    voting_clf.fit(X_train, y_train)
+
+    # SHAP Explainer with a reduced background dataset
+    background = shap.sample(X_train, 50)  # Sample 50 instances for speed
+    explainer = shap.KernelExplainer(voting_clf.predict_proba, background, link="logit")
+    shap_values = explainer.shap_values(X_test)[1]  # Index 1 for positive class SHAP values
+
+    all_shap_values[test_index] = shap_values  # Store SHAP values for the test index
+
+# Average SHAP values across all LOOCV iterations
+mean_shap_values = np.mean(all_shap_values, axis=0)
+
+# Create a DataFrame for feature importances
+feature_importances = pd.DataFrame({
+    'Feature': X.columns,
+    'SHAP Importance': mean_shap_values
+}).sort_values(by='SHAP Importance', ascending=False)
+
+# Print the feature importances
+print(feature_importances)
