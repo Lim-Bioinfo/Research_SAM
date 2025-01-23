@@ -31,7 +31,7 @@ if __name__=="__main__":
 
     ## Essential genes
     essential_genes_Benjamin = set(essential_df1[essential_df1["Essential"] == 'Y']['Gene_symbol'])
-    essential_genes_Nichols = set(essential_df2[(essential_df2['Final essential'] == 1)]['Symbol'])
+    non_essential_genes_Nichols = set(essential_df2[(essential_df2['Final essential'] == 0)]['Symbol'])
 
 
     ## Phylogenetic similar pair with different threshold
@@ -72,7 +72,7 @@ if __name__=="__main__":
         for cancer_type in primary_sam_dict.keys():
             input_pairs = set(sam_coexpressed_dict[cancer_type]) & mean_set - lee_sl_set - synleth_sl_set
             for pair in input_pairs:
-                if len(set(pair) & essential_genes_Benjamin) == 0 and len(set(pair) & essential_genes_Nichols) == 0:
+                if len(set(pair) & essential_genes_Benjamin) == 0 and len(set(pair) & non_essential_genes_Nichols) == 0:
                     f.write('%s,%s,%s,%s,%s\n' % (cancer_type, pair[0], pair[1], primary_sam_dict[cancer_type][pair][0], primary_sam_dict[cancer_type][pair][1]))
 
 
