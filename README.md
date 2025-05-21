@@ -43,3 +43,8 @@
 ## Network proximity code
 + We calculated network proximity in PPI network by using codes from 'Network-based in silico drug efficacy screening' Emre et al, Nature Communications, 2016
 + Link : https://github.com/emreg00/toolbox
+
+
+## Single cell RNA sequencing analysis code
++ We analyzed single cell RNA sequencing data by using codes from 'Best practices for single-cell analysis across modalities' Heumos, L et al, Nature Reviews Genetics, 2023
++ Link : https://www.sc-best-practices.org
