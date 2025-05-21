@@ -118,7 +118,7 @@ def cox_regression_analysis(patient_groups, clinical_data):
     if control_group_name in cox_data_dummies.columns:
         cox_data_dummies.drop([control_group_name], axis=1, inplace=True)     
     
-    cph = CoxPHFitter(penalizer=0.5)
+    cph = CoxPHFitter(penalizer=0.01)
     cph.fit(cox_data_dummies, duration_col='OS.time', event_col='event')
     return cph.summary
 
