@@ -70,7 +70,7 @@ def cox_regression_analysis(patient_groups, clinical_data):
     if control_group_name in cox_data_dummies.columns:
         cox_data_dummies.drop([control_group_name], axis=1, inplace=True)        
         
-    cph = CoxPHFitter(penalizer=0.5)
+    cph = CoxPHFitter(penalizer=0.01)
     cph.fit(cox_data_dummies, duration_col='OS_MONTHS', event_col='event')
     return cph.summary
 
@@ -174,10 +174,10 @@ if __name__=="__main__":
                     hr = sam_hr_dict[cancer_type][gene_pair]
                     if patient in survival_group[gene_pair].iloc[0, 1]:
                         if patient not in sam_score_dict[cancer_type].keys():
-                            sam_score_dict[cancer_type][patient] = 1/hr
+                            sam_score_dict[cancer_type][patient] = 1
                             continue
                         else:
-                            sam_score_dict[cancer_type][patient] += 1/hr           
+                            sam_score_dict[cancer_type][patient] += 1          
                             continue   
                         
             for patient in cancer_patients:
