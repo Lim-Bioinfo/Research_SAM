@@ -19,6 +19,8 @@
 + more-itertools (v 10.3.0)
 + gseapy (v 1.1.0)
 + combat (v 0.3.3)
++ scanpy (v 1.10.3)
++ kneed (v 0.8.5)
 
 ### Requirements for python2
 + Python (v 2.7.16)
