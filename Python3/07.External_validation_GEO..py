@@ -116,10 +116,10 @@ if __name__=="__main__":
                 
             if patient in result_dict[sam_pair].iloc[0, 1]:
                 if patient not in sam_score_dict.keys():
-                    sam_score_dict[patient] = 1/hr  
+                    sam_score_dict[patient] = 1
                     continue
                 else:
-                    sam_score_dict[patient] += 1/hr   
+                    sam_score_dict[patient] += 1
                     continue      
                         
 
