@@ -182,7 +182,7 @@ if __name__=="__main__":
     sam_score_dict = dict()
     sam_input_pair_dict = dict()
 
-    for cancer_type in tqdm(['LUAD', 'LUSC', 'STAD', 'SKCM'], desc = "Cancer type"):
+    for cancer_type in tqdm(['SKCM'], desc = "Cancer type"):
         cancer_df = temp_cancer_df[temp_cancer_df['type'] == cancer_type]
         cancer_df = cancer_df.reset_index(drop=True)
         cancer_clinical_data = cancer_df[['case_submitter_id', 'gender', 'race', 'ajcc_pathologic_tumor_stage', 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event']]
