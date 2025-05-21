@@ -13,8 +13,7 @@ if __name__=="__main__":
     sam_df = pd.read_csv("../Result/Primary_SAM_pairs.csv")
     similarity_df = pd.read_csv("../Result/Result_phylogenetic_similarity.csv.gz", compression ="gzip")
     coexpression_df = pd.read_csv("../Input/TCGA_SAM_co-expression_spearman.csv")
-    essential_df1 = pd.read_csv("../Input/PlosGen_Georgi et al_essesntial_profile.csv")
-    essential_df2 = pd.read_excel("../Input/NatComm_Nichols et al_essesntial_profile.xlsx")
+    essential_df = pd.read_excel("../Input/NatComm_Nichols et al_essesntial_profile.xlsx")
 
 
     ## Primary SAM pairs
@@ -30,8 +29,7 @@ if __name__=="__main__":
 
 
     ## Essential genes
-    essential_genes_Benjamin = set(essential_df1[essential_df1["Essential"] == 'Y']['Gene_symbol'])
-    non_essential_genes_Nichols = set(essential_df2[(essential_df2['Final essential'] == 0)]['Symbol'])
+    non_essential_genes_Nichols = set(essential_df[(essential_df['Final essential'] == 0)]['Symbol'])
 
 
     ## Phylogenetic similar pair with different threshold
@@ -72,7 +70,7 @@ if __name__=="__main__":
         for cancer_type in primary_sam_dict.keys():
             input_pairs = set(sam_coexpressed_dict[cancer_type]) & mean_set - lee_sl_set - synleth_sl_set
             for pair in input_pairs:
-                if len(set(pair) & essential_genes_Benjamin) == 0 and len(set(pair) & non_essential_genes_Nichols) == 0:
+                if len(set(pair) & non_essential_genes_Nichols) == 2:
                     f.write('%s,%s,%s,%s,%s\n' % (cancer_type, pair[0], pair[1], primary_sam_dict[cancer_type][pair][0], primary_sam_dict[cancer_type][pair][1]))
 
 
