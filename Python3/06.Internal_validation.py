@@ -208,10 +208,10 @@ if __name__=="__main__":
                             hr = temp_sam_df.iloc[j, 3]
             
                     if temp_patients_df.iloc[i, 1] not in sam_score_dict[cancer_type].keys():
-                        sam_score_dict[cancer_type][temp_patients_df.iloc[i, 1]] = 1/hr
+                        sam_score_dict[cancer_type][temp_patients_df.iloc[i, 1]] = 1
                         continue
                     else:
-                        sam_score_dict[cancer_type][temp_patients_df.iloc[i, 1]] += 1/hr
+                        sam_score_dict[cancer_type][temp_patients_df.iloc[i, 1]] += 1
                         continue
 
         for patient in set(cancer_df['case_submitter_id']):
