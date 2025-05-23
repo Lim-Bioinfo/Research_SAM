@@ -120,8 +120,8 @@ def annotate_clusters_by_marker_genes(adata, marker_genes_dict, cluster_key="lei
 
 
 # Input data
-df = pd.read_csv("GSE81383_data_melanoma_scRNAseq_BT_2015-07-02.txt", sep="\t", index_col=0) # scRNA-Seq of 92 samples from GSE81383
-metadata_df = pd.read_csv("GSE81383_92_clinical.txt", sep = "\t") # Clinical information of 92 samples from GSE81383 in Supplementary Data S8
+df = pd.read_csv("../Input/GSE81383_data_melanoma_scRNAseq_BT_2015-07-02.txt", sep="\t", index_col=0) # scRNA-Seq of 92 samples from GSE81383
+metadata_df = pd.read_csv("../Input/GSE81383_92_clinical.txt", sep = "\t") # Clinical information of 92 samples from GSE81383 in Supplementary Data S8
 
 
 # Create an AnnData object
