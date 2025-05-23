@@ -21,6 +21,7 @@
 + combat (v 0.3.3)
 + scanpy (v 1.10.3)
 + kneed (v 0.8.5)
++ imblearn (v 0.12.3)
 
 ### Requirements for python2
 + Python (v 2.7.16)
