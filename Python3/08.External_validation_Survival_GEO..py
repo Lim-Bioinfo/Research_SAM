@@ -66,19 +66,14 @@ if __name__=="__main__":
 
     ## Get SKCM SAM pairs
     sam_dict = dict()
-    sam_hr_dict = dict()
 
     for i in range(0, len(sam_df.index)):
         if sam_df.iloc[i, 0] not in sam_dict.keys():
             sam_dict[sam_df.iloc[i, 0]] = [tuple(sorted((sam_df.iloc[i, 1], sam_df.iloc[i, 2])))]
-            sam_hr_dict[sam_df.iloc[i, 0]] = dict()
             continue
         else:
             sam_dict[sam_df.iloc[i, 0]].append(tuple(sorted((sam_df.iloc[i, 1], sam_df.iloc[i, 2]))))
             continue 
-        
-    for i in range(0, len(sam_df.index)):
-        sam_hr_dict[sam_df.iloc[i, 0]][tuple(sorted((sam_df.iloc[i, 1], sam_df.iloc[i, 2])))] = sam_df.iloc[i, 3]
 
 
     ## Preprocessing data
@@ -111,7 +106,6 @@ if __name__=="__main__":
 
     for patient in df_corrected.columns:
         for sam_pair in result_dict.keys():
-            hr = sam_hr_dict['SKCM'][sam_pair]
                 
             if patient in result_dict[sam_pair].iloc[0, 1]:
                 if patient not in sam_score_dict.keys():
