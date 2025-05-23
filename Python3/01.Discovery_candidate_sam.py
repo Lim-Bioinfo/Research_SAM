@@ -3,6 +3,7 @@ import time
 import numpy as np
 import pandas as pd
 
+from statsmodels.stats.multitest import multipletests
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from itertools import combinations
 from lifelines import CoxPHFitter
