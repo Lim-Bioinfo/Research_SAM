@@ -24,7 +24,7 @@ def cox_regression_analysis(clinical_data):
     if control_group_name in cox_data_dummies.columns:
         cox_data_dummies.drop([control_group_name], axis=1, inplace=True)        
         
-    cph = CoxPHFitter(penalizer=0.5)
+    cph = CoxPHFitter(penalizer=0.01)
     cph.fit(cox_data_dummies, duration_col='OS (Weeks)', event_col='event')
     return cph.summary
 
@@ -94,10 +94,11 @@ if __name__=="__main__":
     df1_list = list(df1.columns);df2_list = list(df2.columns);df3_list = list(df3.columns);df4_list = list(df4.columns)             
     df1_copied = df1.copy();df2_copied = df2.copy();df3_copied = df3.copy();df4_copied = df4.copy()
 
-    df1_copied[df1_list] = RobustScaler().fit_transform(df1[df1_list])
-    df2_copied[df2_list] = RobustScaler().fit_transform(df2[df2_list])
-    df3_copied[df3_list] = RobustScaler().fit_transform(df3[df3_list])
-    df4_copied[df4_list] = RobustScaler().fit_transform(df4[df4_list])
+    shift_amount = 1 - df1_copied.min().min()
+    df1_copied_shifted = df1_copied + shift_amount
+    df1_copied = np.log2(df1_copied_shifted+1)
+    df2_copied = np.log2(df2_copied+1)
+    df4_copied = np.log2(df4_copied+1)
                                  
     data_frames = [df1_copied, df2_copied, df3_copied, df4_copied]
     df_merged = reduce(lambda left, right: pd.merge(left, right, on=['NAME'], how='inner'), data_frames)
