@@ -9,7 +9,7 @@
 + Gene expression profile for TCGA cohort data: EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv (Downloaded from PanCanAtlas)
 + Human SL pair data: Human_SL_SynLethDB.csv (Downloaded from SynLethDB, v 2.0)
 + Experimentally identified SL pair data: JS Lee_NatComm_Experimentally identified gold standard SL interactions.csv (Originated from JS Lee et al, 2018, Nature comm, Supplementary Data 1)
-+ Gebe essential profile data2: NatComm_Nichols et al_essesntial_profile.xlsx (Originated from Nichols et al, 2020, Nature comm, Supplementary Data 1)
++ Gene essential profile data: NatComm_Nichols et al_essesntial_profile.xlsx (Originated from Nichols et al, 2020, Nature comm, Supplementary Data 1)
 + Gene expression profile for SKCM from GEO: GSEXXXXX_series_matrix_collapsed_to_symbols.gct (Originated from GSEXXXXX_series_matrix.txt.gz and preprocessed by GSEA)
 + SKCM patient clinical data for Meta-Cohort PM from GEO: Clinical_Meta_PM.xlsx (Data from Supplementary Data S2 of this reseasrch, originated from GEO)
 + SKCM patient clinical data for Meta-Cohort S from GEO: Clinical_Meta_S.xlsx (Data from Supplementary Data S3 of this reseasrch, originated from GEO)
