@@ -60,7 +60,7 @@ def sam_group(pairs, expression_df, threshold):
 if __name__=="__main__":
     print("Open file")
     sam_df = pd.read_csv("../Result/All_SAM_pairs.csv")
-    clinical_df = pd.read_excel("../Input/Meta_clinical.xlsx")
+    clinical_df = pd.read_excel("../Input/Clinical_Meta_S.xlsx") # Supplementary Data S3
     df1 = pd.read_csv("../Input/GSE22153_series_matrix_collapsed_to_symbols.gct", sep = "\t")
     df2 = pd.read_csv("../Input/GSE22154_series_matrix_collapsed_to_symbols.gct", sep = "\t")
     df3 = pd.read_csv("../Input/GSE54467_series_matrix_collapsed_to_symbols.gct", sep = "\t")
