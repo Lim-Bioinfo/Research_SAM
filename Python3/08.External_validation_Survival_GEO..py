@@ -3,7 +3,6 @@ import numpy as np
 import gzip
 import time
 
-from sklearn.decomposition import PCA
 from combat.pycombat import pycombat
 from lifelines import CoxPHFitter, KaplanMeierFitter
 from matplotlib import pyplot as plt
