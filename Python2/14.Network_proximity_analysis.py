@@ -58,11 +58,16 @@ if __name__=="__main__":
             'Dasatinib':{'ABL1', 'SRC', 'EPHA2', 'LCK', 'YES1', 'KIT', 'PDGFRB', 'FYN', 'BCR', 'STAT5B', 'ABL2', 'BTK', 'NR4A3', 'CSK', 
                          'EPHA5', 'EPHB4', 'FGR', 'FRK', 'HSPA8' ,'LYN', 'MAP3K20', 'MAPK14', 'PPAT'}}
     
-    ## Calculate network proximity between pairs and drug target genes
+    ## Calculate network proximity between drug target genes and pairs
     network = wrappers.get_network("../Result/Human_STRING_v12.0_all_Fernandez_700.sif", only_lcc = True)
     for pair in sorted(sam_dict['SKCM']):
-        for target in [{'PIK3CA'}, {'MAPK1','PPP2CA','UGCG'}, {'BRAF'}, {'RAC1', 'TIAM1' ,'TRIO'}, {'SRD5A2'}]:
-            result = wrappers.calculate_proximity(network, target, set(pair) & set(network.nodes()))
+        for drug in drug_dict.keys():
+            result = wrappers.calculate_proximity(network, drug_dict[drug] & set(network.nodes()), set(pair) & set(network.nodes()))
             if len(set(pair) & network.nodes()) > 0:
                 print("%s,%s,%s,%s,%s" % (pair[0], pair[1], result[0], result[1], result[3]))
+        print('-----------')
+
+    ## Calculate network proximity between drug target genes and melanoma and metastasis-related genes
+    for drug in drug_dict.keys():
+        print(drug, wrappers.calculate_proximity(network, drug_dict[drug] & set(network.nodes()), target_biomarkers & set(network.nodes())))
         print('-----------')
