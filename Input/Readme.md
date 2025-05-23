@@ -16,6 +16,7 @@
 + External somatic mutation data from cBioPortal, annotated by ANNOVAR: XXX_cBioPortal_annotated_mutation.tsv.gz (Originated from data_mutations.txt from Liu et al or Snyder et al from cBioPortal)
 + External clinical data: XXX_data_clinical_patient.txt, XXX_data_clinical_sample.txt (Originated from data_clinical_patient.txt and data_clinical_sample.txt from Liu et al or Snyder et al from cBioPortal)
 + Metastasis-associated biomarkers from previous studies: Biomarkers_metastasis_references.xlsx (Data from Supplementary Data S5 of this research, originated from each previous researches)
++ Melanoma, Cutaneous Malignant associated genes: CTD_Neoplasm_Metastasis_D009362_genes_20250328123515.tsv from CTD database (https://ctdbase.org/detail.go?type=disease&acc=MESH%3AD000096142&view=gene)
 
 ## Input files for Python2 code
 + Human protein-protein interaction network: 9606.protein.links.v12.0.txt.gz (Downloaded from STRING DB, v.12.0)
