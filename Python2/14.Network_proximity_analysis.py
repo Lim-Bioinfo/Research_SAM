@@ -37,7 +37,28 @@ if __name__=="__main__":
             sam_dict[sam_df.iloc[i, 0]].append(tuple(sorted((sam_df.iloc[i, 1], sam_df.iloc[i, 2]))))
             continue 
 
-    ## Calculate network proximity
+    ## Bioplanet, melanoma-associated genes
+    bioplanet_melanoma = {'PDGFRB', 'EGF', 'PDGFRA', 'BAD', 'MITF', 'BRAF', 'CDK6', 'PIK3CB', 'PIK3CA', 'CDK4', 'TP53', 'RAF1', 'RB1', 'PIK3R5', 'PIK3R3', 'ARAF', 'PIK3R2', 'EGFR', 'NRAS', 'CCND1', 'AKT3', 'CDH1', 'E2F1', 'AKT1', 'E2F2', 'FGF21', 'AKT2', 'E2F3', 'FGF20', 'FGF23', 'FGF22', 'MAP2K2', 'CDKN2A', 'MAP2K1', 'HGF', 'IGF1', 'FGF18', 'FGF17', 'FGF16', 'PIK3R1', 'FGF19', 'FGF10', 'FGFR1', 'MET', 'KRAS', 'FGF14', 'FGF13', 'FGF12', 'FGF11', 'MDM2', 'CDKN1A', 'PDGFC', 'PDGFB', 'PTEN', 'PDGFA', 'PIK3CD', 'FGF1', 'FGF2', 'FGF3', 'FGF4', 'IGF1R', 'FGF5', 'PIK3CG', 'FGF6', 'FGF7', 'FGF8', 'FGF9', 'PDGFD', 'MAPK3', 'HRAS', 'MAPK1'}
+    ctd_melanoma_direct = set(['BAP1','BRAF','CDK4','CDKN2A','CNR1','CREB1','JMJD6','MC1R','MITF','POT1','STK11','TERT','XRCC3','PPAR'])
+    neoplasm_metastasis = pd.read_csv("../Input/CTD_Neoplasm_Metastasis_D009362_genes_20250328_123515.tsv", sep = "\t")
+    neoplasm_metastasis = neoplasm_metastasis.dropna()
+    ctd_metastasis_direct = set(neoplasm_metastasis['Gene Symbol'])
+
+    target_biomarkers =  bioplanet_melanoma & ctd_melanoma_direct & ctd_metastasis_direct
+    
+    
+    ## Drug targen information, from Drugbank
+    drug_dict = {'5-Azacytidine':{'DNMT1', 'PARP1'}, 'Bortezomib' : {'PSMB5', 'PSMB1', 'PRSS1'}, 'Cisplatin':{'MPG', 'A2M', 'TF', 'ATOX1'}, 
+            'Doxorubicin':{'TOP2A', 'TOP2B', 'TOP1', 'TERT', 'NOLC1'}, 'Paclitaxel':{'TUBB1', 'BLC2', 'NR1I2'}, 'Sirolimus':{'MTOR'},
+            'Sunitinib':{'PDGFRB', 'FLT1', 'KIT', 'KDR', 'FLT4', 'FLT3', 'CSF1R', 'PDGFRA', 'MET'}, 'Erlotinib':{'NR1I2', 'EGFR'},
+            'Vorinostat':{'HDAC1', 'HDAC2', 'HDAC3', 'HDAC6', 'HDAC8'}, 'Dabrafenib':{'BRAF', 'RAF1', 'SIK1', 'NEK11', 'LIMK1'},
+            'Sorafenib':{'BRAF', 'RAF1', 'FLT4', 'KDR', 'FLT1', 'FLT3', 'PDGFRB', 'KIT', 'FGFR1', 'RET', 'EGFR'}, 
+            'RO4929097':{'PSEN1', 'NCSTN', 'PSENEN', 'APH1B', 'APH1A'}, 'Geldanamycin':{'HSP90AA1', 'HSP90B1', 'HSP90AB1'}, 
+            'Gemcitabine':{'RRM1', 'RRM2', 'TYMS', 'CMPK1'}, 'Lapatinib':{'EGFR', 'ERBB2', 'EEF2K'}, 'Topotecan':{'TOP1', 'TOP1MT'}, 'Masitinib':{'SRC'}, 
+            'Dasatinib':{'ABL1', 'SRC', 'EPHA2', 'LCK', 'YES1', 'KIT', 'PDGFRB', 'FYN', 'BCR', 'STAT5B', 'ABL2', 'BTK', 'NR4A3', 'CSK', 
+                         'EPHA5', 'EPHB4', 'FGR', 'FRK', 'HSPA8' ,'LYN', 'MAP3K20', 'MAPK14', 'PPAT'}}
+    
+    ## Calculate network proximity between pairs and drug target genes
     network = wrappers.get_network("../Result/Human_STRING_v12.0_all_Fernandez_700.sif", only_lcc = True)
     for pair in sorted(sam_dict['SKCM']):
         for target in [{'PIK3CA'}, {'MAPK1','PPP2CA','UGCG'}, {'BRAF'}, {'RAC1', 'TIAM1' ,'TRIO'}, {'SRD5A2'}]:
