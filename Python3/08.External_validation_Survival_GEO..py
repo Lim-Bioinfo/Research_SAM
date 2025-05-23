@@ -8,7 +8,6 @@ from combat.pycombat import pycombat
 from lifelines import CoxPHFitter, KaplanMeierFitter
 from matplotlib import pyplot as plt
 from sklearn import set_config
-from sklearn.preprocessing import StandardScaler, RobustScaler
 from tqdm import tqdm
 from functools import reduce
 
