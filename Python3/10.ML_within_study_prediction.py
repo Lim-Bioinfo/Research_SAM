@@ -17,8 +17,6 @@ from imblearn.ensemble import BalancedRandomForestClassifier
 
 
 if __name__=="__main__":
-    warnings.filterwarnings('ignore')
-    
     print("Open file")
     sam_df = pd.read_csv("../Result/All_SAM_pairs.csv")
     biomarker_df = pd.read_excel("../Input/Biomarkers_metastasis_references.xlsx")
