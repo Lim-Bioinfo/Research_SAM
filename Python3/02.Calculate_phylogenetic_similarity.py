@@ -43,8 +43,8 @@ def calculate_similarity_multiprocessing(gene_pairs, phylo_df, gene_to_index, fe
 if __name__=="__main__":
     start_time = time.time()
     print("Open data")
-    phylo_df = pd.read_csv("../Input/JS Lee_Phylo_profile_Natcommm.csv") # Converted from yuval.phylogenetic.profile.RData of JS Lee, 2018, NatureComm, which is originated from Yuval Tabach et al. Mol Syst Biol. (2013), Supplementary Table 1
-    feature_weight = pd.read_csv('../Input/JS Lee_Phylo_weight_Naturecomm.txt', sep = "\t").values.flatten() # Converted from feature.weight.RData of JS Lee, 2018, NatureComm
+    phylo_df = pd.read_csv("../Input/JS Lee_Phylo_profile_Natcomm.csv") # Converted from yuval.phylogenetic.profile.RData of JS Lee, 2018, NatureComm, which is originated from Yuval Tabach et al. Mol Syst Biol. (2013), Supplementary Table 1
+    feature_weight = pd.read_csv('../Input/JS Lee_Phylo_weight_Natcomm.txt', sep = "\t").values.flatten() # Converted from feature.weight.RData of JS Lee, 2018, NatureComm
     max_process_num = int(input("The number of process : "))
 
     gene_set = list(phylo_df['genes'])
