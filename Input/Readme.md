@@ -4,8 +4,8 @@
 ## Input files for Python3 code
 + TCGA MC3 project data: mc3.v0.2.8.PUBLIC.maf.gz (Downloaded from PanCanAtlas)
 + TCGA clinical data: TCGA-Clinical Data Resource (CDR) Outcome.xlsx (Preprocessed from original data downloaded from PanCanAtlas)
-+ Gene phylogenetic profile data: JS Lee_Phylo_profile_Natcommm.csv (Converted yuval.phylogenetic.profile.RData from https://github.com/jooslee/ISLE/tree/main/data, originated from Yuval Tabach et al. Mol Syst Biol. (2013), Supplementary Table 1)
-+ Phylogenetic weight data: JS Lee_Phylo_weight_Naturecomm.txt (Converted feature.weight.RData from https://github.com/jooslee/ISLE/tree/main/data, originated from Ensembl database)
++ Gene phylogenetic profile data: JS Lee_Phylo_profile_Natcomm.csv (Converted yuval.phylogenetic.profile.RData from https://github.com/jooslee/ISLE/tree/main/data, originated from Yuval Tabach et al. Mol Syst Biol. (2013), Supplementary Table 1)
++ Phylogenetic weight data: JS Lee_Phylo_weight_Natcomm.txt (Converted feature.weight.RData from https://github.com/jooslee/ISLE/tree/main/data, originated from Ensembl database)
 + Gene expression profile for TCGA cohort data: EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv (Downloaded from PanCanAtlas)
 + Human SL pair data: Human_SL_SynLethDB.csv (Downloaded from SynLethDB, v 2.0)
 + Experimentally identified SL pair data: JS Lee_NatComm_Experimentally identified gold standard SL interactions.csv (Originated from JS Lee et al, 2018, Nature comm, Supplementary Data 1)
