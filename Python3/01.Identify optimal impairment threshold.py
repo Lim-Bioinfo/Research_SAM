@@ -112,18 +112,11 @@ def choose_min_pat(gvb_df, T, genes=None, method="betabinom", target_EV=1.0):
 # Fisher enrichment with Haldane–Anscombe OR
 def fisher_enrich(Aset, Bset, U, alternative="greater"):
     """
-    Perform Fisher's exact test for enrichment of A in B within universe U,
-    and compute both the raw Odds Ratio and the Haldane–Anscombe corrected OR.
+    Perform Fisher's exact test for enrichment of A in B within universe U, and compute both the raw Odds Ratio and the Haldane–Anscombe corrected OR.
 
-        U : universe gene set
-        A : "impaired" genes (e.g. I(T, k*))
-        B : reference set (e.g. LOEUF-constrained genes)
-
-    Returns
-    -------
-    dict with:
-      OR_raw, OR_HA, p, ci95_lo, ci95_hi,
-      n11, n12, n21, n22, nU, nA, nB
+    (1) U : universe gene set
+    (2) A : Impaired genes (e.g. I(T, k*))
+    (3) B : reference set from Clinvar or gnomAD (e.g. LOEUF-constrained genes)
     """
     U = set(U)
     A = set(Aset) & U
@@ -138,26 +131,14 @@ def fisher_enrich(Aset, Bset, U, alternative="greater"):
     OR_ha = ((n11 + 0.5) * (n22 + 0.5)) / ((n12 + 0.5) * (n21 + 0.5))
 
     ci_lo = ci_hi = None
+    
     try:
         from statsmodels.stats.api import Table2x2
         ci_lo, ci_hi = Table2x2([[n11, n12], [n21, n22]]).oddsratio_confint(method="exact")
     except Exception:
         pass
 
-    return dict(
-        OR_raw=OR_raw,
-        OR_HA=OR_ha,
-        p=p,
-        ci95_lo=ci_lo,
-        ci95_hi=ci_hi,
-        n11=n11,
-        n12=n12,
-        n21=n21,
-        n22=n22,
-        nU=len(U),
-        nA=len(A),
-        nB=len(B),
-    )
+    return dict(OR_raw=OR_raw, OR_HA=OR_ha, p=p, ci95_lo=ci_lo, ci95_hi=ci_hi, n11=n11, n12=n12, n21=n21, n22=n22, nU=len(U), nA=len(A), nB=len(B)) # dict with: OR_raw, OR_HA, p, ci95_lo, ci95_hi, n11, n12, n21, n22, nU, nA, nB
 
 # ClinVar gene-set builders: Get genes both related to pathogenic and oncogenic(melanoma)
 def build_clinvar_sets(variant_summary_path, restrict_small_variants=True, keep_likely_oncogenic=True, melanoma_regex=r"melanoma"):
