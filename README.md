@@ -2,7 +2,7 @@
 
 
 ## Identify pairlevel biomarkers from TCGA to predict and treat cancer metastasis
-+ Repository of source codes which reproduce the research article "Mutation-informed gene pairs to predict melanoma metastasis", Lim et al
++ Repository of source codes of the research article "Mutation-informed gene pairs to predict melanoma metastasis", Lim et al
 
 
 ## Requirements
