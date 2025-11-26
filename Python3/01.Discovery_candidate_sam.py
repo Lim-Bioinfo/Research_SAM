@@ -174,8 +174,7 @@ def cox_regression_analysis_single(gene_pair_chunk_dict, gvb_scores_pivot, clini
         clinical_data = clinical_data.copy()
 
         cox_data = pd.merge(clinical_data, existing_groups, how='left', on='case_submitter_id')
-        cox_data_dummies = pd.get_dummies(cox_data[['gender', 'race', 'ajcc_pathologic_tumor_stage',
-                                                 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event', 'gene_group']])
+        cox_data_dummies = pd.get_dummies(cox_data[['gender', 'race', 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event', 'gene_group']])
 
         # Drop the reference group (control group) dummy variable
         control_group_name = 'gene_group_Neither %s nor %s' % (pair[0], pair[1])
@@ -246,7 +245,7 @@ if __name__=="__main__":
     start_time = time.time()
     maf_df = pd.read_table('../Input/mc3.v0.2.8.PUBLIC.maf.gz', low_memory = False)
     clinical_df = pd.read_excel("../Input/TCGA-Clinical Data Resource (CDR) Outcome.xlsx")
-    clinical_df = clinical_df[['bcr_patient_barcode', 'type', 'gender', 'race','ajcc_pathologic_tumor_stage', 'age_at_initial_pathologic_diagnosis', 'vital_status', 'OS', 'OS.time', 'Microsatellite_instability']]
+    clinical_df = clinical_df[['bcr_patient_barcode', 'type', 'gender', 'race', 'age_at_initial_pathologic_diagnosis', 'vital_status', 'OS', 'OS.time']]
     cancer_type = str(input("Cancer type : "))
     max_process_num = int(input("The number of process : "))
     gvb_threshold = float(input("GVB threshold : "))
@@ -278,15 +277,7 @@ if __name__=="__main__":
 
     # Make attributes : overall survival time, death event, gender
     temp_cancer_df.loc[temp_cancer_df['race'].isin(['[Not Applicable]', '[Not Evaluated]', '[Unknown]']), 'race'] = 'UNKNOWN'
-    temp_cancer_df.loc[~temp_cancer_df['race'].isin(['WHITE', 'BLACK OR AFRICAN AMERICAN', 'UNKNOWN']), 'race'] = 'OTHER'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage I','Stage IA','Stage IB']), 'ajcc_pathologic_tumor_stage'] = 'Stage I'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage II','Stage IIA','Stage IIB','Stage IIC']), 'ajcc_pathologic_tumor_stage'] = 'Stage II'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage III','Stage IIIA','Stage IIIB','Stage IIIC']), 'ajcc_pathologic_tumor_stage'] = 'Stage III'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage IV','Stage IVA','Stage IVB','Stage IVC']), 'ajcc_pathologic_tumor_stage'] = 'Stage IV'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['[Not Available]','[Discrepancy]','[Not Applicable]','[Unknown]']), 'ajcc_pathologic_tumor_stage'] = 'UNKNOWN'
-    temp_cancer_df = temp_cancer_df[(temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage I') | (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage II') | 
-                                    (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage III') | (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage IV') | 
-                                    (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'UNKNOWN')]    
+    temp_cancer_df.loc[~temp_cancer_df['race'].isin(['WHITE', 'BLACK OR AFRICAN AMERICAN', 'UNKNOWN']), 'race'] = 'OTHER' 
     temp_cancer_df['event'] = temp_cancer_df['vital_status'].apply(lambda x: True if x == 'Dead' else False)
 
     # Specific cancer
@@ -312,7 +303,7 @@ if __name__=="__main__":
     print("The number of all candidates : %s" % (len(candidate_gene_pairs)))
 
     # Grouping patients by candidate gene pair
-    cancer_clinical_data = cancer_df[['case_submitter_id', 'gender', 'race', 'ajcc_pathologic_tumor_stage', 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event']]
+    cancer_clinical_data = cancer_df[['case_submitter_id', 'gender', 'race', 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event']]
     cancer_clinical_data = cancer_clinical_data.drop_duplicates(ignore_index = True)
     
 	#Start multiprocessing
@@ -328,3 +319,4 @@ if __name__=="__main__":
     print('Process complete! // ', time.ctime())
     print("Elapsed time: %s seconds" % (time.time() - start_time))
     
+
