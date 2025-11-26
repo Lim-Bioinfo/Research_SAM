@@ -33,7 +33,7 @@ def split_symbols(s):
 def choose_min_pat(gvb_df, T, genes=None, method="betabinom", target_EV=1.0):
     """
     Model:
-    (1) Each gene's count of impaired patients X_g ~ Binomial(n, mu) or
+    (1) Each gene's count of the number of patients in which the gene is impaired. X_g ~ Binomial(n, mu) or
     (2) Beta–Binomial(n, alpha, beta), depending on over-dispersion rho.
         
     gvb_df (DataFrame): GVB matrix, genes x patients; lower values = more impaired
