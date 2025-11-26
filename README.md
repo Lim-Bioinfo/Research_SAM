@@ -1,7 +1,7 @@
 # Research_SAM
 
 
-## Identify pairlevel biomarkers from TCGA to predict and treat cancer metastasis
+## Identify pairlevel biomarkers from to predict and treat melanoma metastasis
 + Repository of source codes of the research article "Mutation-informed gene pairs to predict melanoma metastasis", Lim et al
 
 
