@@ -2,7 +2,7 @@
 
 
 ## Identify pairlevel biomarkers from to predict and treat melanoma metastasis
-+ Repository of source codes of the research article "Mutation-informed gene pairs to predict melanoma metastasis", Lim et al
++ Repository of source codes used in "Mutation-informed gene pairs to predict melanoma metastasis", Lim et al
 
 
 ## Requirements
