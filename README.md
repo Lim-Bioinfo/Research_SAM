@@ -43,7 +43,8 @@
 + Link (Conda-forge) : https://anaconda.org/conda-forge/repo/
 
 
-## Network proximity code
+## Network analysis code
++ We calculated largest connected component (LCC) of genes in SAM pairs in PPI network by using codes from 'Network-based in silico drug efficacy screening' Emre et al, Nature Communications, 2016
 + We calculated network proximity in PPI network by using codes from 'Network-based in silico drug efficacy screening' Emre et al, Nature Communications, 2016
 + Link : https://github.com/emreg00/toolbox
 
