@@ -7,12 +7,9 @@ from scipy.stats import fisher_exact, binom, betabinom
 
 
 ## Function lists
+
+# Return True if a ClinVar 'GeneSymbol' entry looks like a region / locus (e.g. '17p13.1:17p13.3' or 'subset of ...') rather than a single gene. These should be excluded when building gene sets.
 def is_region_like(s):
-    """
-    Return True if a ClinVar 'GeneSymbol' entry looks like a region / locus
-    (e.g. '17p13.1:17p13.3' or 'subset of ...') rather than a single gene.
-    These should be excluded when building gene sets.
-    """
     if pd.isna(s):
         return True
     text = str(s)
@@ -20,12 +17,8 @@ def is_region_like(s):
         return True
     return bool(re.search(r"[A-Za-z0-9-]+:[A-Za-z0-9-]+$", text))
 
-
+# Split a ClinVar GeneSymbol field that may contain multiple genes nto a list of clean, uppercase gene symbols
 def split_symbols(s):
-    """
-    Split a ClinVar GeneSymbol field that may contain multiple genes
-    into a list of clean, uppercase gene symbols.
-    """
     if pd.isna(s):
         return []
     parts = re.split(r"[;,|/]\s*|\s+and\s+", str(s))
@@ -36,72 +29,45 @@ def split_symbols(s):
             symbols.append(sym)
     return symbols
 
-# EV–controlled minimum patient count (min_pat / k*)
+# EV–controlled minimum patient count (min_pat / k*): For a given GVB threshold T, choose the minimum patient count k* such that the expected number of *null* genes passing (EV) is <= target_EV
 def choose_min_pat(gvb_df, T, genes=None, method="betabinom", target_EV=1.0):
     """
-    For a given GVB threshold T, choose the minimum patient count k* such that
-    the expected number of *null* genes passing (EV) is <= target_EV.
-
     Model:
-      - Each gene's count of impaired patients X_g ~ Binomial(n, mu) or
-        Beta–Binomial(n, alpha, beta), depending on over-dispersion rho.
-
-    Parameters
-    ----------
-    gvb_df : DataFrame
-        GVB matrix, genes x patients; lower values = more impaired.
-    T : float
-        GVB threshold.
-    genes : iterable of str or None
-        Subset of genes to use for parameter estimation; default all rows.
-    method : {"binom", "betabinom"}
-        Distribution used for EV computation; over-dispersion estimated
-        from data if "betabinom".
-    target_EV : float
-        Upper bound on expected number of null genes passing the (T, k) filter.
-
-    Returns
+    (1) Each gene's count of impaired patients X_g ~ Binomial(n, mu) or
+    (2) Beta–Binomial(n, alpha, beta), depending on over-dispersion rho.
+        
+    gvb_df (DataFrame): GVB matrix, genes x patients; lower values = more impaired
+    T (float): GVB threshold.
+    genes (iterable of str or None): Subset of genes to use for parameter estimation; default all rows.
+    Method {"binom", "betabinom"}:  Distribution used for EV computation; over-dispersion estimated from data if "betabinom".
+    target_EV (float): Upper bound on expected number of null genes passing the (T, k) filter.
     -------
-    dict with keys:
-      - k_star, n, G, mu, var, rho, alpha, beta, EV_at_k, model, EV_curve
+    
     """
     if genes is None:
         genes = gvb_df.index
 
     M = gvb_df.loc[list(genes)]
-    n = M.shape[1]     # number of patients
-    G = M.shape[0]     # number of genes
+    n = M.shape[1]     # The number of patients
+    G = M.shape[0]     # The number of genes
 
-    # counts of impaired patients per gene at threshold T
+    # Counts of impaired patients per gene at threshold T
     x = (M.lt(T)).sum(axis=1).to_numpy()
 
-    # empirical mean/variance of per-gene frequency
+    # Empirical mean/variance of per-gene frequency
     mu = x.mean() / float(n)
     var = x.var(ddof=1)
 
-    # clamp mu into (0,1) for numerical stability
+    # Clamp mu into (0,1) for numerical stability
     mu = min(max(mu, 1e-9), 1 - 1e-9)
     denom = n * mu * (1.0 - mu)
 
-    if denom <= 0:
-        # completely degenerate: fall back to a simple rule-of-thumb k*
+    if denom <= 0: # Completely degenerate: Fallback to a simple rule-of-thumb k*
         k_star = int(math.ceil(0.1 * n))
         ks = np.arange(1, n + 1)
-        return dict(
-            k_star=k_star,
-            n=n,
-            G=G,
-            mu=mu,
-            var=var,
-            rho=np.nan,
-            alpha=np.nan,
-            beta=np.nan,
-            EV_at_k=np.nan,
-            model="degenerate",
-            EV_curve=pd.DataFrame({"k": ks, "EV": np.nan}),
-        )
+        return dict(k_star=k_star, n=n, G=G, mu=mu, var=var, rho=np.nan, alpha=np.nan, beta=np.nan, EV_at_k=np.nan, model="degenerate", EV_curve=pd.DataFrame({"k": ks, "EV": np.nan})) # dict with keys: k_star, n, G, mu, var, rho, alpha, beta, EV_at_k, model, EV_curve
 
-    # over-dispersion estimate rho (method-of-moments for beta-binomial)
+    # Over-dispersion to estimate rho (for beta-binomial)
     rho = (var / denom - 1.0) / (n - 1.0)
     rho = max(0.0, float(rho))
     use_bb = (method == "betabinom") and (rho > 1e-9)
@@ -141,19 +107,7 @@ def choose_min_pat(gvb_df, T, genes=None, method="betabinom", target_EV=1.0):
         else:
             EV_at_k = np.nan
 
-    return dict(
-        k_star=k_star,
-        n=n,
-        G=G,
-        mu=mu,
-        var=var,
-        rho=(rho if rho > 0 else 0.0),
-        alpha=alpha,
-        beta=beta,
-        EV_at_k=EV_at_k,
-        model=model,
-        EV_curve=pd.DataFrame({"k": ks, "EV": EV}),
-    )
+    return dict(k_star=k_star, n=n, G=G, mu=mu, var=var, rho=(rho if rho > 0 else 0.0), alpha=alpha, beta=beta, EV_at_k=EV_at_k, model=model, EV_curve=pd.DataFrame({"k": ks, "EV": EV})) # dict with keys: k_star, n, G, mu, var, rho, alpha, beta, EV_at_k, model, EV_curve
 
 # Fisher enrichment with Haldane–Anscombe OR
 def fisher_enrich(Aset, Bset, U, alternative="greater"):
