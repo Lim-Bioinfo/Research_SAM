@@ -11,9 +11,7 @@ if __name__=="__main__":
     lee_sl_df = pd.read_csv("../Input/JS Lee_NatComm_Experimentally identified gold standard SL interactions.csv")
     synleth_sl_df = pd.read_csv("../Input/gene_sl_gene.tsv", sep = "\t")
     sam_df = pd.read_csv("../Result/Primary_SAM_pairs.csv")
-    similarity_df = pd.read_csv("../Result/Result_phylogenetic_similarity.csv.gz", compression ="gzip")
     essential_df = pd.read_excel("../Input/NatComm_Nichols et al_essesntial_profile.xlsx")
-
 
     ## Primary SAM pairs
     primary_sam_dict = dict()
@@ -26,7 +24,6 @@ if __name__=="__main__":
             primary_sam_dict[sam_df.iloc[i, 0]][tuple(sorted((sam_df.iloc[i, 1], sam_df.iloc[i, 2])))] = [sam_df.iloc[i, 3], sam_df.iloc[i, 4]]
             continue            
 
-
     ## Essential genes
     non_essential_genes_Nichols = set(essential_df[(essential_df['Final essential'] == 0)]['Symbol'])
 
@@ -34,8 +31,6 @@ if __name__=="__main__":
     lee_sl_df = lee_sl_df[lee_sl_df['SL'] == 1]
     lee_sl_set = set([tuple(sorted((lee_sl_df.iloc[i, 0], lee_sl_df.iloc[i, 1]))) for i in range(0, len(lee_sl_df.index))])
     synleth_sl_set = set([tuple(sorted((synleth_sl_df.iloc[i, 2], synleth_sl_df.iloc[i, 6]))) for i in range(0, len(synleth_sl_df.index))])
-
-
 
     ## Save SAM pairs
     with open("../Result/All_SAM_pairs.csv", "wt") as f:
@@ -45,6 +40,7 @@ if __name__=="__main__":
             for pair in input_pairs:
                 if len(set(pair) & non_essential_genes_Nichols) == 2:
                     f.write('%s,%s,%s,%s,%s\n' % (cancer_type, pair[0], pair[1], primary_sam_dict[cancer_type][pair][0], primary_sam_dict[cancer_type][pair][1]))
+
 
 
 
