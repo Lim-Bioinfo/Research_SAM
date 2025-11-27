@@ -85,7 +85,7 @@ if __name__=="__main__":
             sam_dict[sam_df.iloc[i, 0]].append(tuple(sorted((sam_df.iloc[i, 1], sam_df.iloc[i, 2]))))
             continue 
 
-
+    input_pair = sam_dict['SKCM']
     ## Preprocessing data
     del df1['DESCRIPTION'];del df2['DESCRIPTION'];del df3['DESCRIPTION'];del df4['DESCRIPTION']
     df1 = df1.set_index(keys='NAME');df2 = df2.set_index(keys='NAME');df3 = df3.set_index(keys='NAME');df4 = df4.set_index(keys='NAME');df5 = df5.set_index(keys='NAME')
@@ -163,3 +163,4 @@ if __name__=="__main__":
     plt.savefig("Meta-SV_Survival_OS.svg", dpi = 600)
     plt.tight_layout()
     plt.show()
+
