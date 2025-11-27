@@ -6,6 +6,37 @@ from lifelines import CoxPHFitter, KaplanMeierFitter
 from matplotlib import pyplot as plt
 from tqdm import tqdm
 
+def sam_score_genomic(gvb_df, pairs, T=0.2):
+    """
+    Compute SAM scores from a GVB matrix using SAM gene pairs.
+
+    For each sample, we define:
+    (1) A gene is "impaired" if its GVB is below the genomic threshold T.
+    (2) A pair (a, b) is "co-impaired" in a sample if both a and b are impaired (GVB < T) in that sample.
+
+    Metrics returned per sample: SAM_score
+    (1) Number of SAM pairs that are co-impaired in that patient.
+    """
+    gvb = gvb_df.copy()
+    gvb.index = gvb.index.str.upper()
+
+    # Keep only pairs where both genes are present in the GVB matrix
+    P = [(a, b) for (a, b) in pairs if a in gvb.index and b in gvb.index]
+
+    # Degree of each gene across all SAM pairs (for down-weighting hubs)
+    deg = Counter([g for p in P for g in p])
+
+    sam_cnt = np.zeros(gvb.shape[1], dtype=int)   # Unweighted co-impaired pair count
+    
+    # Pair-based scores
+    for (a, b) in P:
+        # Mask where both genes a and b are impaired (GVB < T)
+        mask = (gvb.loc[a] < T) & (gvb.loc[b] < T)
+
+        sam_cnt += mask.values.astype(int)
+
+    return pd.DataFrame({"Patient ID": gvb.columns,"SAM score": sam_cnt})
+
 def calculate_gvb_per_patient(df):
     # Create a copy of the dataframe
     df = df.copy()
@@ -57,70 +88,17 @@ def calculate_gvb_per_patient(df):
     gvb_scores_pivot = gvb_scores_pivot.sort_index()
     return gvb_scores_pivot
 
-def count_low_gvb_per_gene(gvb_scores_pivot, gvb_threshold):
-    low_gvb_counts = {}
-
-    for gene in gvb_scores_pivot.index:
-        low_gvb_count = (gvb_scores_pivot.loc[gene] < gvb_threshold).sum()
-        low_gvb_counts[gene] = low_gvb_count
-
-    return low_gvb_counts
-
-
-def group_patients_by_gvb(gvb_scores_pivot, gene_pairs, gvb_threshold):
-    result_groups = {}
-    
-    gvb_scores_np = gvb_scores_pivot.to_numpy()
-    index_to_case_id = dict(enumerate(gvb_scores_pivot.columns))
-
-    for pair in gene_pairs:
-    #for pair in gene_pairs:
-        gene1, gene2 = pair
-        gene1_index = gvb_scores_pivot.index.get_loc(gene1)
-        gene2_index = gvb_scores_pivot.index.get_loc(gene2)
-
-        gene1_low_gvb = gvb_scores_np[gene1_index] < gvb_threshold
-        gene2_low_gvb = gvb_scores_np[gene2_index] < gvb_threshold
-
-        group1 = np.logical_and(gene1_low_gvb, gene2_low_gvb)
-        group2 = np.logical_and(gene1_low_gvb, np.logical_not(gene2_low_gvb))
-        group3 = np.logical_and(gene2_low_gvb, np.logical_not(gene1_low_gvb))
-        group4 = np.logical_not(np.logical_or(group1, np.logical_or(group2, group3)))
-
-        existing_groups = []
-        if np.any(group1):
-            existing_groups.append(("%s and %s" % (gene1, gene2), group1))
-            if np.any(group2):
-                existing_groups.append(("Only %s" % gene1, group2))
-            if np.any(group3):
-                existing_groups.append(("Only %s" % gene2, group3))
-            if np.any(group4):
-                existing_groups.append(("Neither %s nor %s" % (gene1, gene2), group4))
-
-            if len(existing_groups) > 1:
-                formatted_list = [(index_to_case_id[i], gene_group) for gene_group, mask in existing_groups for i, case_id in enumerate(mask) if case_id]
-                result_groups[pair] = pd.DataFrame(formatted_list, columns=['case_submitter_id', 'gene_group'])
-
-    return result_groups
-
-
-def cox_regression_analysis(patient_groups, clinical_data):
+def cox_regression_analysis(clinical_data, time, event):
     results = {}
+    cox_data_dummies = pd.get_dummies(clinical_data[['gender', 'race', 'age_at_initial_pathologic_diagnosis', time, event, 'SAM group']])
 
-    #cox_data = clinical_data.drop(columns=['gender'])
-    clinical_data = clinical_data.copy()
-
-    cox_data = pd.merge(clinical_data, patient_groups, how = 'left', on='case_submitter_id')
-    cox_data_dummies = pd.get_dummies(cox_data[['gender', 'race', 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event', 'sam score']])
-
-    control_group_name = 'sam score_sam_l'
+    control_group_name = 'SAM group_SAM-L'
     if control_group_name in cox_data_dummies.columns:
         cox_data_dummies.drop([control_group_name], axis=1, inplace=True)     
     
     cph = CoxPHFitter(penalizer=0.01)
-    cph.fit(cox_data_dummies, duration_col='OS.time', event_col='event')
+    cph.fit(cox_data_dummies, duration_col=time, event_col=event)
     return cph.summary
-
 
 if __name__=="__main__":
     print("Open file")
@@ -178,78 +156,67 @@ if __name__=="__main__":
         cancer_clinical_data = cancer_clinical_data.drop_duplicates(ignore_index = True)
         cancer_clinical_data = cancer_clinical_data.reset_index(drop=True)
 
-        
-        result_gvb_df = calculate_gvb_per_patient(cancer_df)
-        group_dict[cancer_type] = group_patients_by_gvb(result_gvb_df, sam_dict[cancer_type], gvb_threshold)
-
-        cancer_df = temp_cancer_df[temp_cancer_df['type'] == cancer_type]
         input_pair = sam_dict[cancer_type]
-        sam_score_dict[cancer_type] = dict()
-    
-        temp_sam_df = sam_df[sam_df['Cancer type'] == cancer_type].copy()
-    
-        for pair in group_dict[cancer_type].keys():
-            temp_patients_df = group_dict[cancer_type][pair]
-            if 'and' in temp_patients_df.iloc[i, 1]:
-                genes = temp_patients_df.iloc[i, 1].split(" and ")
-                if tuple(sorted(genes)) in input_pair:
-                    for j in range(0, len(temp_sam_df.index)):
-                        if set(genes) == set([temp_sam_df.iloc[j, 1], temp_sam_df.iloc[j, 2]]):
-                            hr = temp_sam_df.iloc[j, 3]
-            
-                    if temp_patients_df.iloc[i, 1] not in sam_score_dict[cancer_type].keys():
-                        sam_score_dict[cancer_type][temp_patients_df.iloc[i, 1]] = 1
-                        continue
-                    else:
-                        sam_score_dict[cancer_type][temp_patients_df.iloc[i, 1]] += 1
-                        continue
+        result_gvb_df = calculate_gvb_per_patient(cancer_df)
+        improved = sam_score_genomic(result_gvb_df, input_pair)
 
-        for patient in set(cancer_df['case_submitter_id']):
-            if patient not in sam_score_dict[cancer_type].keys():
-                sam_score_dict[cancer_type][patient] = 0
-        
-
-        scores = list(sam_score_dict[cancer_type].values())
-        thresh_median = np.median(scores)
+        scores = list(improved['SAM score'])
         thresh_mean = np.mean(scores)
 
-        patient_labels = []
-    
-        for patient, score in sam_score_dict[cancer_type].items():
-            if score > thresh_mean:
-                label = 'sam_h'
-            if score < thresh_mean:
-                label = 'sam_l'
-            patient_labels.append((patient, label))
+        for i in range(0, len(improved)):
+            if improved.iloc[i, 1] > thresh_mean:#thresh_mean:
+                label_type = 'SAM-H'
+            if improved.iloc[i, 1] < thresh_mean:#thresh_mean:
+                label_type = 'SAM-L'
+            patient_labels.append((improved.iloc[i, 0], improved.iloc[i, 1], label_type))
+            
+        classification_df = pd.DataFrame(patient_labels, columns=['Patient_ID', 'SAM score', 'SAM group'])
+        result_df = pd.merge(classification_df, cancer_clinical_data, how='inner', left_on='Patient_ID', right_on = 'case_submitter_id')
 
-        classification_df = pd.DataFrame(patient_labels, columns=['case_submitter_id', 'sam score'])
-        result_df = cox_regression_analysis(classification_df, cancer_clinical_data)
-        hazard_ratio = result_df.loc['sam score_sam_h']['exp(coef)']
-        p_value = result_df.loc['sam score_sam_h']['p']
+        result_clinical_df = result_df[['Patient_ID', 'gender', 'race', 'age_at_initial_pathologic_diagnosis', time, event, 'SAM group']]
+        
+        result_cox_df = cox_regression_analysis(result_clinical_df, time, event)
+        hazard_ratio = result_cox_df.loc['SAM group_SAM-H']['exp(coef)']
+        p_value = result_cox_df.loc['SAM group_SAM-H']['p']
 
 
         ## Draw survival plot
-        temp_clinical_df = pd.merge(cancer_clinical_data, classification_df, how='left', on='case_submitter_id')
-        kmf = KaplanMeierFitter()
-        unique_gene_groups = temp_clinical_df['sam score'].unique()
-        color_map = {"sam_l": "#C00000","sam_h": "#0070C0"}
-        fig, ax = plt.subplots(figsize=(6, 6))
+        temp_df = result_clinical_df
+        order = ["SAM_L", "SAM_H"]
+        tmp = temp_df[temp_df["SAM group"].isin(order)].dropna(subset=[time, event, "SAM group"]).copy()
+        tmp["SAM group"] = pd.Categorical(tmp["SAM group"], categories=order, ordered=True)
 
-        # Iterate through the gene groups and fit the data for each group
-        for group in unique_gene_groups:
-            group_data = temp_clinical_df[temp_clinical_df['sam score'] == group]
-            n_all = len(group_data)
-            n_alive = len(group_data[group_data['event'] == 0])  # Assuming 'event' is 1 for death and 0 for alive
-            kmf.fit(group_data['OS.time'], event_observed=group_data['event'], label=f'Group {group} ({n_alive}/{n_all})')
-            kmf.plot(ax=ax, ci_show=False, color=color_map[group])
+        # Colors
+        color_map = {"SAM_L": "#E0898D", "SAM_H": "#7FA5DD"}
 
-        # Customize the plot
-        ax.set_title('Kaplan-Meier Survival Curves by SAM score, %s' % (cancer_type))
-        ax.set_xlabel('Overall survival (Days)')
-        ax.set_ylabel('Survival Probability')
-        plt.legend(loc="best")
-        plt.savefig("../Result/'Kaplan-Meier Survival Curves in %s by SAM score_HR_%s_P-value_%s.svg" % (cancer_type, hazard_ratio, p_value), dpi = 600)
+        # Split data
+        d_L = tmp[tmp["SAM group"] == "SAM_L"]
+        d_H = tmp[tmp["SAM group"] == "SAM_H"]
+
+        # Fitters
+        km_L = KaplanMeierFitter()
+        km_H = KaplanMeierFitter()
+
+        km_L.fit(durations=d_L[time], event_observed=d_L[event], label=f"SAM_L ({int((d_L[event]==0).sum())}/{len(d_L)})")
+        km_H.fit(durations=d_H[time], event_observed=d_H[event], label=f"SAM_H ({int((d_H[event]==0).sum())}/{len(d_H)})")
+
+        # Draw KM-Plot
+        fig, ax = plt.subplots(figsize=(6,7))
+        km_L.plot(ax=ax, ci_show=False, color=color_map["SAM_L"])
+        km_H.plot(ax=ax, ci_show=False, color=color_map["SAM_H"])
+
+        #ax.set_title(f"Kaplan–Meier Survival by SAM score, {cancer_type}")
+        ax.set_xlabel(f"{time} (Days)")
+        ax.set_ylabel("Survival Probability")
+        ax.set_ylim(0, 1.02)
+        #ax.grid(True, axis="y", alpha=0.25)
+
+        # Add number-at-risk table
+        add_at_risk_counts(km_L, km_H, ax=ax)
+        plt.savefig("TCGA_%s_SAM group_survival.svg" % (event), dpi = 600)
+        plt.tight_layout()
         plt.show()
+
 
 
 
