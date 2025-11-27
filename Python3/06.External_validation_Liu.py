@@ -176,28 +176,28 @@ if __name__=="__main__":
 
     ## Draw kaplan-meier curve
     temp_df = result_clinical_df
-    order = ["SAM_L", "SAM_H"]
+    order = ["SAM-L", "SAM-H"]
     tmp = temp_df[temp_df["SAM group"].isin(order)].dropna(subset=[time, 'event', "SAM group"]).copy()
     tmp["SAM group"] = pd.Categorical(tmp["SAM group"], categories=order, ordered=True)
 
     # Colors
-    color_map = {"SAM_L": "#E0898D", "SAM_H": "#7FA5DD"}
+    color_map = {"SAM-L": "#E0898D", "SAM-H": "#7FA5DD"}
 
     # Split data
-    d_L = tmp[tmp["SAM group"] == "SAM_L"]
-    d_H = tmp[tmp["SAM group"] == "SAM_H"]
+    d_L = tmp[tmp["SAM group"] == "SAM-L"]
+    d_H = tmp[tmp["SAM group"] == "SAM-H"]
 
     # Fitters
     km_L = KaplanMeierFitter()
     km_H = KaplanMeierFitter()
 
-    km_L.fit(durations=d_L[time], event_observed=d_L['event'], label=f"SAM_L ({int((d_L['event']==0).sum())}/{len(d_L)})")
-    km_H.fit(durations=d_H[time], event_observed=d_H['event'], label=f"SAM_H ({int((d_H['event']==0).sum())}/{len(d_H)})")
+    km_L.fit(durations=d_L[time], event_observed=d_L['event'], label=f"SAM-L ({int((d_L['event']==0).sum())}/{len(d_L)})")
+    km_H.fit(durations=d_H[time], event_observed=d_H['event'], label=f"SAM-H ({int((d_H['event']==0).sum())}/{len(d_H)})")
 
     # Plot
     fig, ax = plt.subplots(figsize=(6,7))
-    km_L.plot(ax=ax, ci_show=False, color=color_map["SAM_L"])
-    km_H.plot(ax=ax, ci_show=False, color=color_map["SAM_H"])
+    km_L.plot(ax=ax, ci_show=False, color=color_map["SAM-L"])
+    km_H.plot(ax=ax, ci_show=False, color=color_map["SAM-H"])
 
     #ax.set_title(f"Kaplan–Meier Survival by SAM score, {cancer_type}")
     ax.set_xlabel(f"{time} (Days)")
@@ -210,5 +210,6 @@ if __name__=="__main__":
     plt.savefig("Liu_et_al_dfci_2019_%s.svg" % (event), dpi = 600)
     plt.tight_layout()
     plt.show()
+
 
 
