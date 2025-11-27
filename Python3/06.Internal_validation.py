@@ -111,8 +111,7 @@ def cox_regression_analysis(patient_groups, clinical_data):
     clinical_data = clinical_data.copy()
 
     cox_data = pd.merge(clinical_data, patient_groups, how = 'left', on='case_submitter_id')
-    cox_data_dummies = pd.get_dummies(cox_data[['gender', 'race', 'ajcc_pathologic_tumor_stage', 
-                         'age_at_initial_pathologic_diagnosis', 'OS.time', 'event', 'sam score']])
+    cox_data_dummies = pd.get_dummies(cox_data[['gender', 'race', 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event', 'sam score']])
 
     control_group_name = 'sam score_sam_l'
     if control_group_name in cox_data_dummies.columns:
@@ -128,10 +127,12 @@ if __name__=="__main__":
     sam_df = pd.read_csv("../Result/All_SAM_pairs.csv")
     maf_df = pd.read_table('../Input/mc3.v0.2.8.PUBLIC.maf.gz', low_memory = False)
     clinical_df = pd.read_excel("../Input/TCGA-Clinical Data Resource (CDR) Outcome.xlsx")
-    clinical_df = clinical_df[['bcr_patient_barcode', 'type', 'gender', 'race','ajcc_pathologic_tumor_stage', 'age_at_initial_pathologic_diagnosis', 'vital_status', 'OS', 'OS.time']]
+
+    
+    clinical_df = clinical_df[['bcr_patient_barcode', 'type', 'gender', 'race', 'age_at_initial_pathologic_diagnosis', 'OS', 'OS.time', 'DSS', 'DSS.time', 'PFI', 'PFI.time']]
 
     ## Set parameter and SAM pairs
-    gvb_threshold = 0.3
+    gvb_threshold = 0.2
     sam_dict = dict()
 
     for i in range(0, len(sam_df.index)):
@@ -156,26 +157,11 @@ if __name__=="__main__":
             | (merged_df['Variant_Classification']=="Splice_Site"))] 
     merged_df = merged_df.reset_index(drop=True)
 
-    ## Include patient that has all clinical information
+    ## Include patient that has all clinical information: time, death event, gender
     temp_cancer_df = merged_df[merged_df['type'] != 'TGCT']
-    temp_cancer_df = temp_cancer_df[temp_cancer_df['age_at_initial_pathologic_diagnosis'] >= 0]
-    temp_cancer_df = temp_cancer_df[(temp_cancer_df['vital_status'] == 'Alive') | (temp_cancer_df['vital_status'] == 'Dead')]
-    temp_cancer_df = temp_cancer_df[(temp_cancer_df['OS.time'] >= 0)]
-    temp_cancer_df = temp_cancer_df.reset_index(drop=True)
-
-    ## Make attributes : overall survival time, death event, gender
     temp_cancer_df.loc[temp_cancer_df['race'].isin(['[Not Applicable]', '[Not Evaluated]', '[Unknown]']), 'race'] = 'UNKNOWN'
-    temp_cancer_df.loc[~temp_cancer_df['race'].isin(['WHITE', 'BLACK OR AFRICAN AMERICAN', 'UNKNOWN']), 'race'] = 'OTHER'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage I','Stage IA','Stage IB']), 'ajcc_pathologic_tumor_stage'] = 'Stage I'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage II','Stage IIA','Stage IIB','Stage IIC']), 'ajcc_pathologic_tumor_stage'] = 'Stage II'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage III','Stage IIIA','Stage IIIB','Stage IIIC']), 'ajcc_pathologic_tumor_stage'] = 'Stage III'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['Stage IV','Stage IVA','Stage IVB','Stage IVC']), 'ajcc_pathologic_tumor_stage'] = 'Stage IV'
-    temp_cancer_df.loc[temp_cancer_df['ajcc_pathologic_tumor_stage'].isin(['[Not Available]','[Discrepancy]','[Not Applicable]','[Unknown]']), 'ajcc_pathologic_tumor_stage'] = 'UNKNOWN'
-    temp_cancer_df = temp_cancer_df[(temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage I') | (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage II') | 
-                                       (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage III') | (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'Stage IV') | 
-                                       (temp_cancer_df['ajcc_pathologic_tumor_stage'] == 'UNKNOWN')]
-    temp_cancer_df['event'] = temp_cancer_df['vital_status'].apply(lambda x: True if x == 'Dead' else False)
-
+    temp_cancer_df.loc[~temp_cancer_df['race'].isin(['WHITE', 'BLACK OR AFRICAN AMERICAN', 'UNKNOWN']), 'race'] = 'OTHER
+    temp_cancer_df = temp_cancer_df.reset_index(drop=True)
 
     ## Calculate SAM score and survival analysis based on overall survival
     group_dict = dict()
@@ -183,14 +169,18 @@ if __name__=="__main__":
     sam_input_pair_dict = dict()
 
     for cancer_type in tqdm(['SKCM'], desc = "Cancer type"):
+        time = 'OS' #OS, DSS, PFI
+        event = 'OS.time' #OS.time, DSS.time, PFI.time 
+        
         cancer_df = temp_cancer_df[temp_cancer_df['type'] == cancer_type]
         cancer_df = cancer_df.reset_index(drop=True)
-        cancer_clinical_data = cancer_df[['case_submitter_id', 'gender', 'race', 'ajcc_pathologic_tumor_stage', 'age_at_initial_pathologic_diagnosis', 'OS.time', 'event']]
+        cancer_clinical_data = cancer_df[['case_submitter_id', 'gender', 'race', 'age_at_initial_pathologic_diagnosis', time, event]]
         cancer_clinical_data = cancer_clinical_data.drop_duplicates(ignore_index = True)
         cancer_clinical_data = cancer_clinical_data.reset_index(drop=True)
 
+        
         result_gvb_df = calculate_gvb_per_patient(cancer_df)
-        group_dict[cancer_type] = group_patients_by_gvb(result_gvb_df, sam_dict[cancer_type], 0.3)
+        group_dict[cancer_type] = group_patients_by_gvb(result_gvb_df, sam_dict[cancer_type], gvb_threshold)
 
         cancer_df = temp_cancer_df[temp_cancer_df['type'] == cancer_type]
         input_pair = sam_dict[cancer_type]
@@ -260,5 +250,6 @@ if __name__=="__main__":
         plt.legend(loc="best")
         plt.savefig("../Result/'Kaplan-Meier Survival Curves in %s by SAM score_HR_%s_P-value_%s.svg" % (cancer_type, hazard_ratio, p_value), dpi = 600)
         plt.show()
+
 
 
