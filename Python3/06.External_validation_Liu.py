@@ -146,6 +146,9 @@ if __name__=="__main__":
     result_gvb_df = calculate_gvb_per_patient(temp_cancer_df)
     improved = sam_score_genomic(result_gvb_df, input_pair)
 
+    scores = list(improved['SAM score'])
+    thresh_mean = np.mean(scores)
+    patient_labels = []
     for i in range(0, len(improved)):
         if improved.iloc[i, 1] > thresh_mean:#thresh_mean:
             label_type = 'SAM-H'
@@ -207,4 +210,5 @@ if __name__=="__main__":
     plt.savefig("Liu_et_al_dfci_2019_%s.svg" % (event), dpi = 600)
     plt.tight_layout()
     plt.show()
+
 
