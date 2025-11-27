@@ -117,4 +117,5 @@ if __name__=="__main__":
         if result_df.iloc[i, 3] == 'Metastases':
             sam_score_merged_dict['Metastases'][result_df.iloc[i, 2]] = result_df.iloc[i, 4]
             
-    print(mannwhitneyu(list(sam_score_merged_dict['Primary'].values()), list(sam_score_merged_dict['Metastases'].values())))
+    #print(mannwhitneyu(list(sam_score_merged_dict['Primary'].values()), list(sam_score_merged_dict['Metastases'].values())))
+    print(ttest_ind(list(sam_score_merged_dict['Primary'].values()), list(sam_score_merged_dict['Metastases'].values())))
