@@ -149,8 +149,8 @@ if __name__=="__main__":
     sam_input_pair_dict = dict()
 
     for cancer_type in tqdm(['SKCM'], desc = "Cancer type"):
-        time = 'OS' #OS, DSS, PFI
-        event = 'OS.time' #OS.time, DSS.time, PFI.time 
+        time = 'OS.time' #OS, DSS, PFI
+        event = 'OS' #OS.time, DSS.time, PFI.time 
         
         cancer_df = temp_cancer_df[temp_cancer_df['type'] == cancer_type]
         cancer_df = cancer_df.reset_index(drop=True)
@@ -218,6 +218,7 @@ if __name__=="__main__":
         plt.savefig("TCGA_%s_SAM group_survival.svg" % (event), dpi = 600)
         plt.tight_layout()
         plt.show()
+
 
 
 
