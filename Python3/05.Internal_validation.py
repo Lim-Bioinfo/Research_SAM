@@ -3,7 +3,9 @@ import numpy as np
 import gzip
 
 from lifelines import CoxPHFitter, KaplanMeierFitter
+from collections import Counter
 from matplotlib import pyplot as plt
+from lifelines.plotting import add_at_risk_counts
 from tqdm import tqdm
 
 def sam_score_genomic(gvb_df, pairs, T=0.2):
@@ -216,6 +218,7 @@ if __name__=="__main__":
         plt.savefig("TCGA_%s_SAM group_survival.svg" % (event), dpi = 600)
         plt.tight_layout()
         plt.show()
+
 
 
 
