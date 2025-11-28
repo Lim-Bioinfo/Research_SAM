@@ -18,8 +18,8 @@ from imblearn.ensemble import BalancedRandomForestClassifier
 
 if __name__=="__main__":
     print("Open file")
-    sam_df = pd.read_csv("../Result/All_SAM_pairs.csv")
-    biomarker_df = pd.read_excel("../Input/Biomarkers_metastasis_references.xlsx")
+    sam_df = pd.read_csv("../Result/All_SAM_pairs.csv") #Data from Supplementary Data S2
+    biomarker_df = pd.read_excel("../Input/Biomarkers_metastasis_references.xlsx") #Data from Supplementary Data S9
     clinical_df = pd.read_excel("../Input/Clinical_Meta_PM.xlsx") #Data from Supplementary Data S5
     df1 = pd.read_csv("../Input/GSE7553_series_matrix_collapsed_to_symbols.gct", sep = "\t")
     df2 = pd.read_csv("../Input/GSE8401_series_matrix_collapsed_to_symbols.gct", sep = "\t")
@@ -220,4 +220,5 @@ if __name__=="__main__":
         print(f"\nLOOCV AUC = {auc:.3f}  (n evaluated = {mask.sum()}/{n})")
     else:
         print("\nLOOCV AUC not computed (insufficient evaluated folds or single-class labels).")
+
 
