@@ -8,7 +8,7 @@ import gzip
 
 from combat.pycombat import pycombat
 from functools import reduce
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_curve, roc_auc_score, average_precision_score
 from matplotlib import pyplot as plt
 from sklearn import set_config
 from sklearn.model_selection import LeaveOneOut
@@ -20,44 +20,32 @@ if __name__=="__main__":
     print("Open file")
     sam_df = pd.read_csv("../Result/All_SAM_pairs.csv")
     biomarker_df = pd.read_excel("../Input/Biomarkers_metastasis_references.xlsx")
-    clinical_df = pd.read_excel("../Input/Clinical_Meta_PM.xlsx") #Data from Supplementary Data S2
+    clinical_df = pd.read_excel("../Input/Clinical_Meta_PM.xlsx") #Data from Supplementary Data S5
     df1 = pd.read_csv("../Input/GSE7553_series_matrix_collapsed_to_symbols.gct", sep = "\t")
     df2 = pd.read_csv("../Input/GSE8401_series_matrix_collapsed_to_symbols.gct", sep = "\t")
     df3 = pd.read_csv("../Input/GSE15605_series_matrix_collapsed_to_symbols.gct", sep = "\t")
     df4 = pd.read_csv("../Input/GSE46517_series_matrix_collapsed_to_symbols.gct", sep = "\t")
+    df5 = pd.read_csv("GSE65904_series_matrix_collapsed_to_symbols.gct", sep = "\t")
 
-    # Batch correction
-    label = {'GSE7553':{'Primary':list(clinical_df[(clinical_df['Sample type'] == 'Primary') & clinical_df['Dataset'] == 'GSE7553']), 
-                      'Metastases':list(clinical_df[(clinical_df['Sample type'] == 'Metastases') & clinical_df['Dataset'] == 'GSE7553'])}
-            'GSE8401':{'Primary':list(clinical_df[(clinical_df['Sample type'] == 'Primary') & clinical_df['Dataset'] == 'GSE8401']), 
-                      'Metastases':list(clinical_df[(clinical_df['Sample type'] == 'Metastases') & clinical_df['Dataset'] == 'GSE8401'])}
-            'GSE15605':{'Primary':list(clinical_df[(clinical_df['Sample type'] == 'Primary') & clinical_df['Dataset'] == 'GSE15605']), 
-                      'Metastases':list(clinical_df[(clinical_df['Sample type'] == 'Metastases') & clinical_df['Dataset'] == 'GSE15605'])}
-            'GSE46517':{'Primary':list(clinical_df[(clinical_df['Sample type'] == 'Primary') & clinical_df['Dataset'] == 'GSE46517']), 
-                      'Metastases':list(clinical_df[(clinical_df['Sample type'] == 'Metastases') & clinical_df['Dataset'] == 'GSE46517'])}}
-
-
-    del df1['DESCRIPTION'];del df2['DESCRIPTION'];del df3['DESCRIPTION'];del df4['DESCRIPTION']
-    df1 = df1.set_index(keys='NAME');df2 = df2.set_index(keys='NAME');df3 = df3.set_index(keys='NAME');df4 = df4.set_index(keys='NAME')
-    df1_list = list(df1.columns);df2_list = list(df2.columns);df3_list = list(df3.columns);df4_list = list(df4.columns)             
-    df1_copied = df1.copy();df2_copied = df2.copy();df3_copied = df3.copy();df4_copied = df4.copy()
+    # Data preprocessing
+    del df1['DESCRIPTION'];del df2['DESCRIPTION'];del df3['DESCRIPTION'];del df4['DESCRIPTION'];del df5['DESCRIPTION']
+    df1 = df1.set_index(keys='NAME');df2 = df2.set_index(keys='NAME');df3 = df3.set_index(keys='NAME');df4 = df4.set_index(keys='NAME');df5 = df5.set_index(keys='NAME')
+    df1_list = list(df1.columns);df2_list = list(df2.columns);df3_list = list(df3.columns);df4_list = list(df4.columns);df5_list = list(df5.columns)           
+    df1_copied = df1.copy();df2_copied = df2.copy();df3_copied = df3.copy();df4_copied = df4.copy();df5_copied = df5.copy()
 
     df1_copied = np.log2(df1_copied + 1)
     df2_copied = np.log2(df2_copied + 1)
     df4_copied = np.log2(df4_copied + 1)
+    df5_copied = np.log2(df5_copied + 1)
                                  
-    data_frames = [df1_copied, df2_copied, df3_copied, df4_copied]
+    data_frames = [df1_copied, df2_copied, df3_copied, df4_copied, df5_copied]
     df_merged = reduce(lambda left, right: pd.merge(left, right, on=['NAME'], how='inner'), data_frames)
 
-    batches = ['GSE7553']*len(df1.columns) + ['GSE8401']*len(df2.columns) + ['GSE15605']*len(df3.columns) + ['GSE46517']*len(df4.columns)
+    batches = ['GSE7553']*len(df1.columns) + ['GSE8401']*len(df2.columns) + ['GSE15605']*len(df3.columns) + ['GSE46517']*len(df4.columns) + ['GSE65904']*len(df5.columns)
     df_corrected = pycombat(df_merged, batches)
-    #df_corrected.to_csv("GSE_merged_batchcorrected_sv.gct", sep = "\t")
+    #df_corrected.to_csv("Meta_SKCM_PM_expression_revised.txt", sep = "\t")
 
-    primary = label['GSE7553']['Primary'] + label['GSE8401']['Primary'] + label['GSE15605']['Primary'] + label['GSE46517']['Primary']
-    metastases = label['GSE7553']['Metastases'] + label['GSE8401']['Metastases'] + label['GSE15605']['Metastases'] + label['GSE46517']['Metastases']
-    label_dict = {'Primary' : primary, 'Metastases' : metastases}
-
-    ## Genes in SKCM SAM pairs
+    # Genes in SKCM SAM pairs
     sam_dict = dict()
     for i in range(0, len(sam_df.index)):
         if sam_df.iloc[i, 0] not in sam_dict.keys():
@@ -73,7 +61,7 @@ if __name__=="__main__":
         selected_genes.add(pair[0])
         selected_genes.add(pair[1])
 
-    ## Metastasis or metastatic tumor related biomarker in SKCM from previous literatures
+    # Metastasis or metastatic tumor related biomarker in SKCM from previous literatures
     candidate_dict = {'SAM genes' : list(set(df_corrected.index) & selected_genes)}
 
     for i in range(0, len(biomarker_df.index)):
@@ -85,7 +73,11 @@ if __name__=="__main__":
                 candidate_dict[biomarker_df.iloc[i, 0]].append(biomarker_df.iloc[i, 1])
                 continue      
 
-    ## Predict tumor types with various metastaasis-related biomarkers
+    label_dict = {'Primary' : list(clinical_df[clinical_df['Sample type'] == 'Primary']['Sample ID']), 
+              'Metastases' :list(clinical_df[clinical_df['Sample type'] == 'Metastases']['Sample ID'])}
+    pm_status = [clinical_df.iloc[i, 0] for i in range(0, len(clinical_df)) if clinical_df.iloc[i, 4] != 'Unclassified']
+    
+    #Predict tumor types with various metastaasis-related biomarkers
     loo = LeaveOneOut()
     fpr_tpr = []
     aucs = []
@@ -94,11 +86,11 @@ if __name__=="__main__":
         all_true, all_pred, all_prob = [], [], []
 
         df_corrected_T = pd.DataFrame(StandardScaler().fit_transform(df_corrected.values.T).T, columns=df_corrected.columns, index=df_corrected.index)
-        df_corrected_T = df_corrected_T[sorted(primary + metastases)]
+        df_corrected_T = df_corrected_T[pm_status]
         df_selected = df_corrected_transposed[sorted(candidate_dict[selected_genes_list])]
 
         X = df_selected  # Features
-        sample_label_map = {sample: 1 if sample in label_dict['Primary'] else 0 for sample in df_selected.index}
+        sample_label_map = {sample: 1 if sample in label_dict['Metastases'] else 0 for sample in df_selected.index}
         y = [sample_label_map[sample] for sample in X.index]
 
         # Define Classifiers with specific random states where applicable
@@ -117,7 +109,8 @@ if __name__=="__main__":
             all_pred.extend(y_pred)
             all_prob.extend(probabilities)
 
-        roc_auc = roc_auc_score(all_true, all_prob)
+        auroc = roc_auc_score(all_true, all_prob)
+        auprc = average_precision_score(all_true, all_prob)
         accuracy = accuracy_score(all_true, all_pred)
         precision = precision_score(all_true, all_pred)
         recall = recall_score(all_true, all_pred)
@@ -127,15 +120,16 @@ if __name__=="__main__":
         aucs.append(roc_auc)
     
         print(f"Gene list: {selected_genes_list}")
+        print(f"AUROC: {roc_auc}")
+        print(f"AUPRC: {roc_auc}")
         print(f"Accuracy: {accuracy}")
         print(f"Precision: {precision}")
         print(f"Recall: {recall}")
         print(f"F1 Score: {f1}")
-        print(f"AUC: {roc_auc}")
         print('--------------')
     
 
-    ## Plot AUC curves with distinct colors
+    # Plot AUC curves with distinct colors
     colors = ['#FF4D26', '#FF8847', '#F9BC66', '#548235', '#70AD47', '#A9D18E', '#2F5597', '#0070C0', '#9DC3E6', '#664BA0', '#B756D8', '#9A96FF']
     plt.figure(figsize=(12, 12))
     for i, color in zip(range(len(fpr_tpr)), colors):
@@ -157,38 +151,73 @@ if __name__=="__main__":
     warnings.filterwarnings('ignore')
     
     # Prepare data
-    df_corrected_transposed = df_corrected.T
-    df_selected = df_corrected_transposed[sorted(candidate_dict['SAM genes'])]
-    X = df_selected  # Features
-    sample_label_map = {sample: 1 if sample in label_dict['Primary'] else 0 for sample in X.index}
-    y = np.array([sample_label_map[sample] for sample in X.index])
-    
-    # Define LOOCV procedure
-    all_shap_values = np.zeros((len(X), X.shape[1]))
-    
-    # Execute LOOCV
-    for train_index, test_index in tqdm(list(loo.split(X)), desc = 'Samples'):
-        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-        y_train, y_test = y[train_index], y[test_index]
+    X_all = df_corrected.loc[:, pm_status]     # genes x samples
 
-        # Model Training
-        BRF.fit(X_train, y_train)
+    # Restrict to candidate genes that exist
+    genes = sorted(set(candidate_dict['SAM genes']) & set(X_all.index))
+    if not genes:
+        raise ValueError("No overlap between candidate SAM genes and expression matrix.")
 
-        # SHAP Explainer with a reduced background dataset
-        background = shap.sample(X_train, 50)  # Sample 50 instances for speed
-        explainer = shap.KernelExplainer(BRF.predict_proba, background, link="logit")
-        shap_values = explainer.shap_values(X_test)[1]  # Index 1 for positive class SHAP values
+    # Enforce fixed order and transpose to samples x genes
+    X_all = X_all.loc[genes]                   # genes x samples
+    X_all_T = X_all.T.copy()                   # samples x genes
 
-        all_shap_values[test_index] = shap_values  # Store SHAP values for the test index
+    y = X_all_T.index.to_series().map(lambda s: 1 if s in label_dict['Metastases'] else 0).astype(int).values
 
-    # Average SHAP values across all LOOCV iterations
-    mean_shap_values = np.mean(all_shap_values, axis=0)
+    # LOOCV and SHAP (no scaling for trees)
+    loo = LeaveOneOut()
+    n, p = X_all_T.shape
+    all_shap = np.zeros((n, p))
+    heldout_prob = np.full(n, np.nan)
 
-    # Create a DataFrame for feature importances
-    feature_importances = pd.DataFrame({
-        'Feature': X.columns,
-        'SHAP Importance': mean_shap_values
-    }).sort_values(by='SHAP Importance', ascending=False)
+    for _, (tr, te) in enumerate(tqdm(loo.split(X_all_T), total=n, desc="LOOCV")):
+        if np.unique(y[tr]).size < 2: # Both classes needs to training
+            continue
 
-    # Print the feature importances
-    print(feature_importances)
+        # Fresh clone; fit on TRAIN only
+        BRF.fit(X_all_T.iloc[tr], y[tr])
+
+        # Held-out probability (QC / AUC)
+        heldout_prob[te] = BRF.predict_proba(X_all_T.iloc[te])[:, 1]
+
+        # SHAP with TreeExplainer; background = training data
+        explainer = shap.TreeExplainer(BRF, data=X_all_T.iloc[tr], model_output="probability")
+        shap_vals = explainer.shap_values(X_all_T.iloc[te])  # may be list or ndarray
+
+        # Robustly extract positive-class SHAP of shape (1, p)
+        if isinstance(shap_vals, (list, tuple)):
+            # list-of-classes API
+            pos_idx = int(np.where(brf.classes_ == 1)[0][0])
+            sv_pos = shap_vals[pos_idx]                                # (1, p)
+        else:
+            arr = np.asarray(shap_vals)
+            if arr.ndim == 3 and arr.shape[-1] == 2:
+                # condensed array with class axis at the end: (n_test, p, 2)
+                pos_idx = int(np.where(brf.classes_ == 1)[0][0])
+                sv_pos = arr[..., pos_idx]                             # (1, p)
+            elif arr.ndim == 2 and arr.shape[1] == p:
+                # already (n_test, p)
+                sv_pos = arr
+            else:
+                raise ValueError(f"Unexpected SHAP shape: {arr.shape}")
+
+        all_shap[te, :] = np.asarray(sv_pos).reshape(1, -1)
+
+
+    # Aggregate out-of-sample SHAP and performance
+    mean_abs = np.nanmean(np.abs(all_shap), axis=0)    # ranking metric
+    mean_signed = np.nanmean(all_shap, axis=0)         # direction (toward Metastases if >0)
+
+    feature_importances = (pd.DataFrame({"Feature": genes,"mean_abs_SHAP": mean_abs,"mean_signed_SHAP": mean_signed}).sort_values("mean_abs_SHAP", ascending=False).reset_index(drop=True))
+
+    print("\nTop features by mean(|SHAP|):")
+    print(feature_importances.head(30))
+
+    # AUROC results from training using LOOCV (only where predictions exist and both classes present)
+    mask = ~np.isnan(heldout_prob)
+    if mask.sum() >= 2 and len(np.unique(y[mask])) == 2:
+        auc = roc_auc_score(y[mask], heldout_prob[mask])
+        print(f"\nLOOCV AUC = {auc:.3f}  (n evaluated = {mask.sum()}/{n})")
+    else:
+        print("\nLOOCV AUC not computed (insufficient evaluated folds or single-class labels).")
+
